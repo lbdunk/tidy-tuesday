@@ -48,8 +48,7 @@ DATA age_gaps2;
 RUN;
 
 /* Calculate mean difference, including median and quartiles */
-ODS TRACE ON;
-PROC MEANS DATA=age_gaps2 MEAN STDDEV Q1 MEDIAN Q3 NOPRINT;
+PROC MEANS DATA=age_gaps2 MEAN STDDEV Q1 MEDIAN Q3;
 	VAR age_diff_by_sex;
 	ODS OUTPUT Summary=age_gaps_summary;
 RUN;
@@ -62,3 +61,24 @@ PROC PRINT DATA=age_gaps_summary NOOBS LABEL;
 	FORMAT age_diff_by_sex_Mean age_diff_by_sex_StdDev 8.2
 		age_diff_by_sex_Q1--age_diff_by_sex_Q3 8.;
 RUN;
+/* Mean and median aren't that far apart but the standard deviation seems huge.
+	What's going on? */
+
+GOPTIONS RESET=ALL;
+ODS LISTING GPATH="&path.\tidy-tuesday\2-14-23\output\" IMAGE_DPI=300;
+ODS GRAPHICS / IMAGENAME="Hollywood age gaps &SYSDATE9." IMAGEFMT=PNG;
+TITLE "Male actors are, on average, 7 years older than female actors in opposite-sex on-screen relationships.";
+PROC SGPLOT DATA=age_gaps2 NOAUTOLEGEND;
+	HISTOGRAM age_diff_by_sex / DATALABEL=COUNT SHOWBINS;
+	DENSITY age_diff_by_sex;
+	YAXIS LABEL="Percent of on-screen relationships";
+	XAXIS LABEL="Age difference between male and female actors";
+RUN;
+TITLE;
+
+/* Research questions:
+	How much older is the average male actor than his female costar? 
+		7 years (median)
+	Does it follow a normal distribution?
+		Yes! Slightly left-skewed, but overall very normal.
+*/
